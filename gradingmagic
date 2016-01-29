@@ -44,16 +44,16 @@ find "$path" -maxdepth 1 -type f \! -name "*.zip" \! -name "index.html" \! -name
     # If there is not an existing Markdown file for the submission, create one.
     # Should avoid overwriting any existing feedback files (would suck to lose
     # your work...)
-    if [ ! -f "$file".md ]; then
+    if [ ! -f "$path/feedback/$out_basename".md ]; then
         echo "Creating empty Markdown template for $student_name."
 
         # Create the markdown file, initialized with a header containing the student's name.
-        echo "# $student_name" > "$file".md
+        echo "# $student_name" > "$path/feedback/$out_basename".md
     else
         echo "Compiling Markdown for $student_name."
 
         # Use pandoc to output the *feedback* file to the same format that the student's submission was in.
-        pandoc -o "$path/feedback/output/$out_basename.pdf" "$file".md
+        pandoc -o "$path/feedback/output/$out_basename.pdf" "$path/feedback/$out_basename".md
     fi
 done
 
