@@ -29,14 +29,14 @@ output_tag="$output_tag"_feedback
 # Find all the files that are likely to be student submissions, and try to avoid any of the files that probably aren't.
 find "$path" -maxdepth 1 -type f \! -name "*.zip" \! -name "index.html" \! -name "*.md" \! -name ".*" | while read file; do
     # Get the name of the student.
-    student_name=`echo $file | awk -F"-" '{print $3}' | sed -e 's/^ //g' | sed '/%$/d' | sed 's/ /_/g'`
+    student_name=`echo $file | awk -F"- " '{print $2}' | sed -e 's/^ //g' | sed '/%$/d' | sed 's/ /_/g'`
     
     # Get the base name of the file.
     base_filename=`basename "$file"`
 
     unique_id=`echo $base_filename | awk '{print $1}'`
 
-    out_basename="$unique_id"_"$student_name"_"$output_tag"
+    out_basename="$unique_id"_"$student_name"_"$output_tag".md
 
 
     #echo $student_name generated from $file.
@@ -44,16 +44,16 @@ find "$path" -maxdepth 1 -type f \! -name "*.zip" \! -name "index.html" \! -name
     # If there is not an existing Markdown file for the submission, create one.
     # Should avoid overwriting any existing feedback files (would suck to lose
     # your work...)
-    if [ ! -f "$path/feedback/$out_basename".md ]; then
+    if [ ! -f "$path/feedback/$out_basename" -a ! -f "$path/$out_basename" ]; then
         echo "Creating empty Markdown template for $student_name."
 
         # Create the markdown file, initialized with a header containing the student's name.
-        echo "# $student_name" > "$path/feedback/$out_basename".md
-    else
+        echo "# $student_name" > "$path/$out_basename"
+    elif [ -f "$path/feedback/$out_basename" ]; then
         echo "Compiling Markdown for $student_name."
 
-        # Use pandoc to output the *feedback* file to the same format that the student's submission was in.
-        pandoc -o "$path/feedback/output/$out_basename.pdf" "$path/feedback/$out_basename".md
+        # Use pandoc to convert the Markdown feedback to PDF.
+        pandoc -o "$path/feedback/output/$out_basename.pdf" "$path/feedback/$out_basename"
     fi
 done
 
