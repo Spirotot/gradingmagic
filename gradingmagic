@@ -53,12 +53,13 @@ find "$path" -maxdepth 1 -type f \! -name "*.zip" \! -name "index.html" \! -name
         echo "Compiling Markdown for $student_name."
 
         # Use pandoc to convert the Markdown feedback to PDF.
-        pandoc -o "$path/feedback/output/$out_basename.pdf" "$path/feedback/$out_basename"
+        pandoc -o "$path/feedback/output/$base_filename.pdf" "$path/feedback/$out_basename"
     fi
 done
 
 # If the feedback/output directory is _not_ empty, generate the output.zip, which can then be submitted to the D2L dropbox folder.
 if [ "$(ls -A "$path/feedback/output")" ]; then
+    rm -f "$path/feedback/output.zip"
     zip -r "$path/feedback/output.zip" "$path/feedback/output/"*
 fi
 

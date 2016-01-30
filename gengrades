@@ -1,0 +1,65 @@
+#!/bin/bash
+
+feedback_path=$1
+master_csv_path=$2
+#output_csv_path=$3
+max_points=$3
+
+if [[ "$feedback_path"X == X ]]; then
+    #feedback_path=`pwd`
+    echo "Must provide a path to a /feedback dir."
+    exit 1
+fi
+
+if [[ "$feedback_path" == "." ]]; then
+    $feedback_path=`pwd`
+fi
+
+feedback_path=`readlink -f "$feedback_path"`
+
+tmp=`dirname "$feedback_path"`
+tag=`basename $tmp`
+echo "Tag: $tag"
+
+if [[ "$master_csv_path"X == X ]]; then
+    echo "Must provide a master CSV path."
+    exit 1
+fi
+
+if [ ! -f "$master_csv_path" ]; then
+    echo "Must provide a valid master CSV path."
+    exit 1
+fi
+
+if [[ "$max_points"X == X ]]; then
+    echo "Must provide max points (as an integer)."
+    exit 1
+fi
+
+#if [[ "$output_csv_path"X == X ]]; then
+output_csv_path="$feedback_path"/"$tag"_grades.csv
+#fi
+
+echo "Output CSV Path: $output_csv_path"
+
+echo "OrgDefinedId,Last Name,First Name,$tag Points Grade <Numeric MaxPoints:$max_points>,End-of-Line Indicator" > $output_csv_path
+
+while read file; do
+    base_filename=`basename "$file"`
+    unique_id=`echo $base_filename | awk -F"_" '{print $1}'`
+    first_name=`echo $base_filename | awk -F"_" '{print $2}'`
+    last_name=`echo $base_filename | awk -F"_" '{print $3}'`
+
+    org_id=`grep "$last_name,$first_name" "$master_csv_path" | awk -F"," '{print $1}'`
+    output_line="$org_id,$last_name,$first_name"
+
+    final_points=$max_points
+
+    while read line; do
+        #echo "Line $line from $base_filename"
+        final_points=`expr $final_points + $line`
+    done < <(grep "^\* (" "$file" | awk '{print $2}' | tr -d "()")
+     
+    output_line="$output_line","$final_points","#"
+    echo $output_line >> $output_csv_path
+done < <(find $feedback_path -maxdepth 1 -type f -name "*.md" \! -name "*.csv" \! -name ".*" \! -name "*.zip") 
