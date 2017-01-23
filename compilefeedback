@@ -1,0 +1,37 @@
+#!/bin/bash
+path=$1
+
+# Default to current directory if no directory is given.
+if [[ "$path"X == X ]]; then
+    path=`pwd` # Use `pwd` instead of '.' so that the $outputtag gets a good value if not provided by the user.
+fi
+
+if [[ "$path" == "." ]]; then
+    path=`pwd`
+fi
+
+cp ~/bin/gradingmagicmakefile Makefile
+
+make -j`nproc`
+
+# If the feedback/output directory is _not_ empty, generate the output.zip, which can then be submitted to the D2L dropbox folder.
+if [ "$(ls -A "$path/feedback/output")" ]; then
+    rm -f "$path/feedback/output.zip"
+
+    mkdir "$path"/tmp
+    cp "$path/feedback/output/"* "$path"/tmp/
+
+    for file in `find "$path"/tmp/ -type f -name "*pdf"`; do
+        basename=`basename $file`
+        echo $basename
+        unique_id=`echo $basename | awk -F"_" '{print $1}'`
+        rest_of_file=${basename#${unique_id}_}
+
+        echo $rest_of_file
+
+        mv $file "$path"/tmp/"$unique_id - $rest_of_file"
+    done
+    zip -r "$path/feedback/output.zip" "$path/tmp/"*
+
+    rm -rf "$path"/tmp
+fi

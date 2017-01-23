@@ -85,7 +85,7 @@ Imagine you have a dropbox folder called `Lab1`, with a maximum point value of
 3. `cd Lab1/`
 4. `gradingmagic`
 5. `feedback`
-6. `gradingmagic`
+6. `compilefeedback`
 7. `gengrades ./feedback [path to CSV grades exported from D2L] 30` <- `30` is
    the max points for this lab.
 

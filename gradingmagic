@@ -1,10 +1,10 @@
 #!/bin/bash
 path=$1
-output_tag=$2
+outputtag=$2
 
 # Default to current directory if no directory is given.
 if [[ "$path"X == X ]]; then
-    path=`pwd` # Use `pwd` instead of '.' so that the $output_tag gets a good value if not provided by the user.
+    path=`pwd` # Use `pwd` instead of '.' so that the $outputtag gets a good value if not provided by the user.
 fi
 
 if [[ "$path" == "." ]]; then
@@ -20,14 +20,14 @@ else # If the path doesn't exist, exit.
 fi
 
 # Default to using the parent folder for tag if none is given.
-if [[ "$output_tag"X == X ]]; then
-    output_tag=`basename "$path" | sed 's/ /_/g'`
+if [[ "$outputtag"X == X ]]; then
+    outputtag=`basename "$path" | sed 's/ /_/g'`
 fi
 
-output_tag="$output_tag"_feedback
+outputtag="$outputtag"_feedback
 
 # Find all the files that are likely to be student submissions, and try to avoid any of the files that probably aren't.
-find "$path" -maxdepth 1 -type f \! -name "*.zip" \! -name "index.html" \! -name "*.md" \! -name ".*" | while read file; do
+find "$path" -maxdepth 1 -type f \! -name "Makefile" \! -name "*.zip" \! -name "index.html" \! -name "*.md" \! -name ".*" | while read file; do
     # Get the name of the student.
     student_name=`echo $file | awk -F"- " '{print $2}' | sed -e 's/^ //g' | sed '/%$/d' | sed 's/ /_/g'`
     
@@ -36,9 +36,8 @@ find "$path" -maxdepth 1 -type f \! -name "*.zip" \! -name "index.html" \! -name
 
     unique_id=`echo $base_filename | awk '{print $1}'`
 
-    out_basename="$unique_id"_"$student_name"_"$output_tag".md
-
-
+    out_basename="$unique_id"_"$student_name"_"$outputtag".md
+    
     #echo $student_name generated from $file.
 
     # If there is not an existing Markdown file for the submission, create one.
@@ -49,17 +48,6 @@ find "$path" -maxdepth 1 -type f \! -name "*.zip" \! -name "index.html" \! -name
 
         # Create the markdown file, initialized with a header containing the student's name.
         echo "# $student_name" > "$path/$out_basename"
-    elif [ -f "$path/feedback/$out_basename" ]; then
-        echo "Compiling Markdown for $student_name."
-
-        # Use pandoc to convert the Markdown feedback to PDF.
-        pandoc --highlight-style haddoc -fmarkdown-implicit_figures -V urlcolor=cyan -V geometry:margin=0.5in -o "$path/feedback/output/$base_filename.pdf" "$path/feedback/$out_basename"
     fi
 done
-
-# If the feedback/output directory is _not_ empty, generate the output.zip, which can then be submitted to the D2L dropbox folder.
-if [ "$(ls -A "$path/feedback/output")" ]; then
-    rm -f "$path/feedback/output.zip"
-    zip -r "$path/feedback/output.zip" "$path/feedback/output/"*
-fi
 
