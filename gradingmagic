@@ -42,16 +42,17 @@ find "$path" -maxdepth 1 \! -name "feedback" \! -name "Makefile" \! -name "index
     filetype=`file -b "$file"`
 
     unique_id=`echo $base_filename | awk '{print $1}'`
+    out_basename="$unique_id"_"$student_name"_"$outputtag".md
     
     case "$filetype" in
         Zip*)
             echo "Unzipping $file..."
-            unzip -q -d "${file//.zip/}" "$file"
+            #unzip -q -d "${file//.zip/}" "$file"
+            unzip -o -q -d "${out_basename//.md/}" "$file"
             rm "$file"
             ;;
     esac
 
-    out_basename="$unique_id"_"$student_name"_"$outputtag".md
     
     #echo $student_name generated from $file.
 

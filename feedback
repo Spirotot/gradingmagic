@@ -1,11 +1,12 @@
 #!/bin/bash
+set -x
 thistty=$(tty)
-find . -maxdepth 1 -type f \! -name "*.zip" \! -name "index.html" \! -name "*.md" \! -name ".*" | while read file; do
+find . -maxdepth 1 \! -name "feedback" \! -name "Makefile" \! -name "*.zip" \! -name "index.html" \! -name "*.md" \! -name ".*" | while read file; do
     unique_id=`basename "$file" | awk '{print $1}'`
-    if [ -f "$unique_id*.md" ]; then
+    if [ -f "$unique_id.md" ]; then
         xdg-open "$file" &
-        echo "$unique_id*.md" | xargs bash -c '</dev/tty vim "$@"' ignore
-        mv "$unique_id*.md" feedback/
+        echo "$unique_id.md" | xargs bash -c '</dev/tty vim "$@"' ignore
+        mv "$unique_id.md" feedback/
         printf 'Press [ENTER] to continue...'
         read _ < $thistty
     fi
