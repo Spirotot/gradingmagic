@@ -27,14 +27,29 @@ fi
 outputtag="$outputtag"_feedback
 
 # Find all the files that are likely to be student submissions, and try to avoid any of the files that probably aren't.
-find "$path" -maxdepth 1 -type f \! -name "Makefile" \! -name "*.zip" \! -name "index.html" \! -name "*.md" \! -name ".*" | while read file; do
+find "$path" -maxdepth 1 \! -name "feedback" \! -name "Makefile" \! -name "index.html" \! -name "*.md" \! -name ".*" | while read file; do
     # Get the name of the student.
     student_name=`echo $file | awk -F"- " '{print $2}' | sed -e 's/^ //g' | sed '/%$/d' | sed 's/ /_/g'`
+
+    if [ ${#student_name} -eq 0 ]; then
+        continue
+    fi
+
     
     # Get the base name of the file.
     base_filename=`basename "$file"`
 
+    filetype=`file -b "$file"`
+
     unique_id=`echo $base_filename | awk '{print $1}'`
+    
+    case "$filetype" in
+        Zip*)
+            echo "Unzipping $file..."
+            unzip -q -d "${file//.zip/}" "$file"
+            rm "$file"
+            ;;
+    esac
 
     out_basename="$unique_id"_"$student_name"_"$outputtag".md
     
